@@ -37,7 +37,7 @@ import {
   useGenerateCaptions,
   useRecyclePost,
   useBulkUploadPosts,
-} from "@workspace/api-client-react";
+} from "@/lib/api-client";
 import {
   Calendar,
   Plus,

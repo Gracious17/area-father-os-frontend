@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useGetMyTier } from "@workspace/api-client-react";
+import { useGetMyTier } from "@/lib/api-client";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 

@@ -8,7 +8,7 @@ import {
   useGetMyTier,
   useGetDashboardSummary,
   useGetDashboardActivity,
-} from "@workspace/api-client-react";
+} from "@/lib/api-client";
 import {
   Calendar,
   DollarSign,

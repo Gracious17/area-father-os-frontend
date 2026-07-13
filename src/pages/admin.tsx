@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AppShell } from "@/components/AppShell";
-import { useGetMyTier } from "@workspace/api-client-react";
+import { useGetMyTier } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -238,11 +238,11 @@ export function AdminPage() {
           <p className="mb-2 text-amber-700">
             If a user row was created before enterprise auto-upgrade was active, use this one-off{" "}
             <code className="bg-amber-100 px-1 rounded">curl</code> command to fix it immediately.
-            First set <code className="bg-amber-100 px-1 rounded">ADMIN_SECRET</code> as a Replit
-            secret (Secrets tab in the workspace toolbar), then run:
+            First set <code className="bg-amber-100 px-1 rounded">ADMIN_SECRET</code> as an
+            environment variable on the backend, then run:
           </p>
           <pre className="bg-amber-100 rounded p-2 overflow-x-auto text-[10px] leading-relaxed whitespace-pre-wrap break-all">
-{`curl -X PATCH https://<your-replit-domain>/api/admin/promote \\
+{`curl -X PATCH https://<your-api-domain>/api/admin/promote \\
   -H "Content-Type: application/json" \\
   -H "x-admin-secret: <ADMIN_SECRET>" \\
   -d '{"email":"osejialexander77@gmail.com","tier":"enterprise"}'`}

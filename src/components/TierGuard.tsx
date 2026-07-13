@@ -1,5 +1,5 @@
 import { useLocation } from "wouter";
-import { useGetMyTier } from "@workspace/api-client-react";
+import { useGetMyTier } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Lock } from "lucide-react";
 

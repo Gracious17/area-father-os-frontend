@@ -2,7 +2,7 @@ import { useLocation } from "wouter";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useGetMyTier } from "@workspace/api-client-react";
+import { useGetMyTier } from "@/lib/api-client";
 
 const TIERS = [
   {
