@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, lazy, Suspense } from "react";
 import { ClerkProvider, SignIn, SignUp, Show, useClerk, useUser } from "@clerk/react";
 import { publishableKeyFromHost } from "@clerk/react/internal";
 import { shadcn } from "@clerk/themes";
@@ -7,29 +7,38 @@ import { QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import Home from "@/pages/home";
-import Dashboard from "@/pages/dashboard";
-import UpgradePage from "@/pages/upgrade";
-import NotFound from "@/pages/not-found";
-import SchedulingPage from "@/pages/scheduling";
-import MonetizationPage from "@/pages/monetization";
-import AnalyticsPage from "@/pages/analytics";
-import { AmbassadorsPage } from "@/pages/ambassadors";
-import { BookPromoPage } from "@/pages/book-promo";
-import { LiveVideoPage } from "@/pages/live-video";
-import { LiveSessionSignupPage } from "@/pages/live-session-signup";
-import { ClipEnginePage } from "@/pages/clip-engine";
-import { AutoPostPage } from "@/pages/auto-post";
-import { TrafficPage } from "@/pages/traffic";
-import { FanHubPage } from "@/pages/fan-hub";
-import { IntelligencePage } from "@/pages/intelligence";
-import { MediaPartnersPage } from "@/pages/media-partners";
-import { InviteLandingPage } from "@/pages/invite-landing";
-import { AmbassadorPortalPage } from "@/pages/ambassador-portal";
-import { createModulePage } from "@/pages/module-placeholder";
-import { AdminPage } from "@/pages/admin";
-import { SettingsPage } from "@/pages/settings";
-import { SupportPage } from "@/pages/support";
+
+// Lazy-loaded pages — each becomes its own JS chunk
+const Home                = lazy(() => import("@/pages/home"));
+const Dashboard           = lazy(() => import("@/pages/dashboard"));
+const UpgradePage         = lazy(() => import("@/pages/upgrade"));
+const NotFound            = lazy(() => import("@/pages/not-found"));
+const SchedulingPage      = lazy(() => import("@/pages/scheduling"));
+const MonetizationPage    = lazy(() => import("@/pages/monetization"));
+const AnalyticsPage       = lazy(() => import("@/pages/analytics"));
+const AmbassadorsPage     = lazy(() => import("@/pages/ambassadors").then(m => ({ default: m.AmbassadorsPage })));
+const BookPromoPage       = lazy(() => import("@/pages/book-promo").then(m => ({ default: m.BookPromoPage })));
+const LiveVideoPage       = lazy(() => import("@/pages/live-video").then(m => ({ default: m.LiveVideoPage })));
+const LiveSessionSignupPage = lazy(() => import("@/pages/live-session-signup").then(m => ({ default: m.LiveSessionSignupPage })));
+const ClipEnginePage      = lazy(() => import("@/pages/clip-engine").then(m => ({ default: m.ClipEnginePage })));
+const AutoPostPage        = lazy(() => import("@/pages/auto-post").then(m => ({ default: m.AutoPostPage })));
+const TrafficPage         = lazy(() => import("@/pages/traffic").then(m => ({ default: m.TrafficPage })));
+const FanHubPage          = lazy(() => import("@/pages/fan-hub").then(m => ({ default: m.FanHubPage })));
+const IntelligencePage    = lazy(() => import("@/pages/intelligence").then(m => ({ default: m.IntelligencePage })));
+const MediaPartnersPage   = lazy(() => import("@/pages/media-partners").then(m => ({ default: m.MediaPartnersPage })));
+const InviteLandingPage   = lazy(() => import("@/pages/invite-landing").then(m => ({ default: m.InviteLandingPage })));
+const AmbassadorPortalPage = lazy(() => import("@/pages/ambassador-portal").then(m => ({ default: m.AmbassadorPortalPage })));
+const AdminPage           = lazy(() => import("@/pages/admin").then(m => ({ default: m.AdminPage })));
+const SettingsPage        = lazy(() => import("@/pages/settings").then(m => ({ default: m.SettingsPage })));
+const SupportPage         = lazy(() => import("@/pages/support").then(m => ({ default: m.SupportPage })));
+
+function PageLoader() {
+  return (
+    <div className="flex min-h-screen items-center justify-center">
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+    </div>
+  );
+}
 
 const isLocal =
   window.location.hostname === "localhost" ||
@@ -226,71 +235,73 @@ function ClerkProviderWithRoutes() {
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <ClerkQueryClientCacheInvalidator />
-          <Switch>
-            <Route path="/" component={HomeRedirect} />
-            <Route path="/sign-in/*?" component={SignInPage} />
-            <Route path="/sign-up/*?" component={SignUpPage} />
+          <Suspense fallback={<PageLoader />}>
+            <Switch>
+              <Route path="/" component={HomeRedirect} />
+              <Route path="/sign-in/*?" component={SignInPage} />
+              <Route path="/sign-up/*?" component={SignUpPage} />
 
-            <Route path="/dashboard">
-              <AuthRequired><Dashboard /></AuthRequired>
-            </Route>
-            <Route path="/upgrade">
-              <AuthRequired><UpgradePage /></AuthRequired>
-            </Route>
-            <Route path="/scheduling">
-              <AuthRequired><SchedulingPage /></AuthRequired>
-            </Route>
-            <Route path="/monetization">
-              <AuthRequired><MonetizationPage /></AuthRequired>
-            </Route>
-            <Route path="/analytics">
-              <AuthRequired><AnalyticsPage /></AuthRequired>
-            </Route>
-            <Route path="/book-promo">
-              <AuthRequired><BookPromoPage /></AuthRequired>
-            </Route>
-            <Route path="/live-video">
-              <AuthRequired><LiveVideoPage /></AuthRequired>
-            </Route>
-            <Route path="/live/:id">
-              {(params: { id?: string }) => <LiveSessionSignupPage sessionId={Number(params.id)} />}
-            </Route>
-            <Route path="/clip-engine">
-              <AuthRequired><ClipEnginePage /></AuthRequired>
-            </Route>
-            <Route path="/auto-post">
-              <AuthRequired><AutoPostPage /></AuthRequired>
-            </Route>
-            <Route path="/traffic">
-              <AuthRequired><TrafficPage /></AuthRequired>
-            </Route>
-            <Route path="/ambassadors">
-              <AuthRequired><AmbassadorsPage /></AuthRequired>
-            </Route>
-            <Route path="/fan-hub">
-              <AuthRequired><FanHubPage /></AuthRequired>
-            </Route>
-            <Route path="/intelligence">
-              <AuthRequired><IntelligencePage /></AuthRequired>
-            </Route>
-            <Route path="/media-partners">
-              <AuthRequired><MediaPartnersPage /></AuthRequired>
-            </Route>
-            <Route path="/invite/:token" component={InviteLandingPage} />
-            <Route path="/ambassador-portal" component={AmbassadorPortalPage} />
+              <Route path="/dashboard">
+                <AuthRequired><Dashboard /></AuthRequired>
+              </Route>
+              <Route path="/upgrade">
+                <AuthRequired><UpgradePage /></AuthRequired>
+              </Route>
+              <Route path="/scheduling">
+                <AuthRequired><SchedulingPage /></AuthRequired>
+              </Route>
+              <Route path="/monetization">
+                <AuthRequired><MonetizationPage /></AuthRequired>
+              </Route>
+              <Route path="/analytics">
+                <AuthRequired><AnalyticsPage /></AuthRequired>
+              </Route>
+              <Route path="/book-promo">
+                <AuthRequired><BookPromoPage /></AuthRequired>
+              </Route>
+              <Route path="/live-video">
+                <AuthRequired><LiveVideoPage /></AuthRequired>
+              </Route>
+              <Route path="/live/:id">
+                {(params: { id?: string }) => <LiveSessionSignupPage sessionId={Number(params.id)} />}
+              </Route>
+              <Route path="/clip-engine">
+                <AuthRequired><ClipEnginePage /></AuthRequired>
+              </Route>
+              <Route path="/auto-post">
+                <AuthRequired><AutoPostPage /></AuthRequired>
+              </Route>
+              <Route path="/traffic">
+                <AuthRequired><TrafficPage /></AuthRequired>
+              </Route>
+              <Route path="/ambassadors">
+                <AuthRequired><AmbassadorsPage /></AuthRequired>
+              </Route>
+              <Route path="/fan-hub">
+                <AuthRequired><FanHubPage /></AuthRequired>
+              </Route>
+              <Route path="/intelligence">
+                <AuthRequired><IntelligencePage /></AuthRequired>
+              </Route>
+              <Route path="/media-partners">
+                <AuthRequired><MediaPartnersPage /></AuthRequired>
+              </Route>
+              <Route path="/invite/:token" component={InviteLandingPage} />
+              <Route path="/ambassador-portal" component={AmbassadorPortalPage} />
 
-            <Route path="/support">
-              <AuthRequired><SupportPage /></AuthRequired>
-            </Route>
-            <Route path="/admin">
-              <AuthRequired><AdminPage /></AuthRequired>
-            </Route>
-            <Route path="/settings">
-              <AuthRequired><SettingsPage /></AuthRequired>
-            </Route>
+              <Route path="/support">
+                <AuthRequired><SupportPage /></AuthRequired>
+              </Route>
+              <Route path="/admin">
+                <AuthRequired><AdminPage /></AuthRequired>
+              </Route>
+              <Route path="/settings">
+                <AuthRequired><SettingsPage /></AuthRequired>
+              </Route>
 
-            <Route component={NotFound} />
-          </Switch>
+              <Route component={NotFound} />
+            </Switch>
+          </Suspense>
           <Toaster />
         </TooltipProvider>
       </QueryClientProvider>
