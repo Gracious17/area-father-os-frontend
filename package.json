@@ -79,6 +79,7 @@
     "internal": "link:@clerk/react/internal"
   },
   "engines": {
-    "node": "20.x"
-  }
+    "node": "24.x"
+  },
+  "packageManager": "pnpm@10.24.0"
 }
