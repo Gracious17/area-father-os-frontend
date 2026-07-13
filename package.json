@@ -76,7 +76,7 @@
     "vite": "^7.3.5"
   },
   "engines": {
-    "node": "22.x"
+    "node": "24.x"
   },
   "packageManager": "pnpm@10.24.0"
 }
