@@ -13,14 +13,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
+import { getToken } from "@clerk/react";
 
-const API = import.meta.env.BASE_URL.replace(/\/$/, "") + "/api";
-function apiFetch(path: string, opts?: RequestInit) {
-  return fetch(`${API}${path}`, { credentials: "include", ...opts }).then(async r => {
-    if (!r.ok) { const e = await r.json().catch(() => ({ error: r.statusText })); throw new Error(e.error ?? r.statusText); }
-    if (r.status === 204) return null;
-    return r.json();
+const API = (import.meta.env.VITE_API_URL ?? "").replace(/\/+$/, "") + "/api";
+async function apiFetch(path: string, opts?: RequestInit) {
+  const token = await getToken();
+  const r = await fetch(`${API}${path}`, {
+    credentials: "include",
+    ...opts,
+    headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...opts?.headers },
   });
+  if (!r.ok) { const e = await r.json().catch(() => ({ error: r.statusText })); throw new Error(e.error ?? r.statusText); }
+  if (r.status === 204) return null;
+  return r.json();
 }
 
 const PLATFORM_COLORS: Record<string, string> = {

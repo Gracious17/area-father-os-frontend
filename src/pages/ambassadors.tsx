@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useUser } from "@clerk/react";
+import { useUser, getToken } from "@clerk/react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AppShell } from "@/components/AppShell";
 import { TierGuard } from "@/components/TierGuard";
@@ -21,10 +21,15 @@ import {
   MapPin, Phone, Mail, Send, Copy, ChevronRight, Search, Filter, X, FileText,
 } from "lucide-react";
 
-const API = import.meta.env.BASE_URL.replace(/\/$/, "") + "/api";
+const API = (import.meta.env.VITE_API_URL ?? "").replace(/\/+$/, "") + "/api";
 
 async function apiFetch(path: string, opts?: RequestInit) {
-  const r = await fetch(`${API}${path}`, { credentials: "include", ...opts });
+  const token = await getToken();
+  const r = await fetch(`${API}${path}`, {
+    credentials: "include",
+    ...opts,
+    headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...opts?.headers },
+  });
   if (!r.ok) throw new Error(await r.text());
   if (r.status === 204) return null;
   const ct = r.headers.get("content-type") ?? "";

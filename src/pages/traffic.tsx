@@ -13,17 +13,22 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { getToken } from "@clerk/react";
 
 async function apiFetch(method: string, url: string, body?: unknown): Promise<Response> {
+  const token = await getToken();
   return fetch(url, {
     method,
     credentials: "include",
-    headers: body !== undefined ? { "Content-Type": "application/json" } : {},
+    headers: {
+      ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
 }
 
-const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
+const BASE = (import.meta.env.VITE_API_URL ?? "").replace(/\/+$/, "");
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface TrafficCampaign {

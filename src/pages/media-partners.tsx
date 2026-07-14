@@ -15,14 +15,20 @@ import {
   ExternalLink, Copy, Ban, Search, Filter, ChevronRight, Edit3, RotateCcw,
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { getToken } from "@clerk/react";
 
-const apiBase = import.meta.env.BASE_URL.replace(/\/$/, "");
+const apiBase = (import.meta.env.VITE_API_URL ?? "").replace(/\/+$/, "");
 
 async function apiFetch(path: string, opts?: RequestInit) {
+  const token = await getToken();
   const r = await fetch(`${apiBase}/api${path}`, {
-    headers: { "Content-Type": "application/json" },
     credentials: "include",
     ...opts,
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...opts?.headers,
+    },
   });
   if (!r.ok) {
     const d = await r.json().catch(() => ({}));

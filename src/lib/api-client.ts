@@ -1,13 +1,16 @@
 import { useMutation, useQuery, type UseMutationResult, type UseQueryResult } from "@tanstack/react-query";
+import { getToken } from "@clerk/react";
 
 const API_BASE = (import.meta.env.VITE_API_URL ?? "").replace(/\/+$/, "");
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  const token = await getToken();
   const res = await fetch(`${API_BASE}${path}`, {
     credentials: "include",
     ...init,
     headers: {
       ...(init?.body ? { "Content-Type": "application/json" } : {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...init?.headers,
     },
   });

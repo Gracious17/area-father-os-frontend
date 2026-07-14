@@ -19,11 +19,17 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getToken } from "@clerk/react";
 
-const API = import.meta.env.BASE_URL.replace(/\/$/, "") + "/api";
+const API = (import.meta.env.VITE_API_URL ?? "").replace(/\/+$/, "") + "/api";
 
 async function apiFetch(path: string, opts?: RequestInit) {
-  const r = await fetch(`${API}${path}`, { credentials: "include", ...opts });
+  const token = await getToken();
+  const r = await fetch(`${API}${path}`, {
+    credentials: "include",
+    ...opts,
+    headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...opts?.headers },
+  });
   if (!r.ok) throw new Error(await r.text());
   if (r.status === 204) return null;
   return r.json();

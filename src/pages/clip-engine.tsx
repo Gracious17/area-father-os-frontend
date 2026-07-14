@@ -12,11 +12,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { getToken } from "@clerk/react";
 
-const API = import.meta.env.BASE_URL.replace(/\/$/, "") + "/api";
+const API = (import.meta.env.VITE_API_URL ?? "").replace(/\/+$/, "") + "/api";
 
 async function apiFetch(path: string, opts?: RequestInit) {
-  const res = await fetch(API + path, { credentials: "include", ...opts });
+  const token = await getToken();
+  const res = await fetch(API + path, {
+    credentials: "include",
+    ...opts,
+    headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...opts?.headers },
+  });
   if (!res.ok) throw new Error(await res.text());
   if (res.status === 204) return null;
   return res.json();

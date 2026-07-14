@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Radio, Bell, CheckCircle, Calendar, Users } from "lucide-react";
 
-const API = import.meta.env.BASE_URL.replace(/\/$/, "") + "/api";
+const API = (import.meta.env.VITE_API_URL ?? "").replace(/\/+$/, "") + "/api";
 
 async function apiFetch(path: string, opts?: RequestInit) {
   const res = await fetch(`${API}${path}`, { ...opts });

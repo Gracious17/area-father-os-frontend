@@ -15,11 +15,17 @@ import {
   BarChart, Bar, Legend,
 } from "recharts";
 import { TrendingUp, TrendingDown, Users, Eye, Heart, FileText, Clock, Globe, Zap, Download } from "lucide-react";
+import { getToken } from "@clerk/react";
 
-const API = import.meta.env.BASE_URL.replace(/\/$/, "") + "/api";
+const API = (import.meta.env.VITE_API_URL ?? "").replace(/\/+$/, "") + "/api";
 
 async function apiFetch(path: string, opts?: RequestInit) {
-  const r = await fetch(`${API}${path}`, { credentials: "include", ...opts });
+  const token = await getToken();
+  const r = await fetch(`${API}${path}`, {
+    credentials: "include",
+    ...opts,
+    headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...opts?.headers },
+  });
   if (!r.ok) throw new Error(await r.text());
   return r.json();
 }
