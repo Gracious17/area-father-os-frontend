@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useLayoutEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { useUser, useClerk, Show } from "@clerk/react";
 import {
@@ -57,6 +57,11 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Settings", path: "/settings", icon: <SlidersHorizontal className="w-4 h-4" />, moduleKey: null },
 ];
 
+// Every page wraps itself in <AppShell>, so the sidebar unmounts/remounts on
+// each navigation. Persist its scroll offset outside the component so it can
+// be restored immediately on remount instead of jumping to the top.
+let sidebarScrollTop = 0;
+
 const TIER_BADGE: Record<string, string> = {
   free: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400",
   creator: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400",
@@ -71,6 +76,11 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
   const [location] = useLocation();
   const { data: tier } = useGetMyTier();
   const moduleAccess = tier?.moduleAccess as Record<string, boolean> | undefined;
+  const navRef = useRef<HTMLElement>(null);
+
+  useLayoutEffect(() => {
+    if (navRef.current) navRef.current.scrollTop = sidebarScrollTop;
+  }, []);
 
   return (
     <div className="flex flex-col h-full">
@@ -102,7 +112,12 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
       )}
 
       {/* Nav items */}
-      <nav className="flex-1 overflow-y-auto px-2 py-3 space-y-0.5" data-testid="sidebar-nav">
+      <nav
+        ref={navRef}
+        onScroll={(e) => { sidebarScrollTop = e.currentTarget.scrollTop; }}
+        className="flex-1 overflow-y-auto px-2 py-3 space-y-0.5"
+        data-testid="sidebar-nav"
+      >
         {NAV_ITEMS.filter((item) => !item.enterpriseOnly || tier?.tier === "enterprise").map((item) => {
           const unlocked = item.moduleKey === null || (moduleAccess?.[item.moduleKey as string] ?? false);
           const isActive = location === item.path;
