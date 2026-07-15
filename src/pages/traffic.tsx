@@ -161,6 +161,7 @@ function CampaignDetail({ campaign, onStatusChange }: { campaign: TrafficCampaig
     queryKey: ["traffic-campaign-detail", campaign.id],
     queryFn: async () => {
       const res = await apiFetch("GET", `${BASE}/api/traffic-campaigns/${campaign.id}`);
+      if (!res.ok) throw new Error(await res.text());
       return res.json();
     },
   });
@@ -274,6 +275,7 @@ function MetaAdsPanel({ campaignId, channels }: { campaignId: number; channels: 
     queryKey: ["meta-audience-presets"],
     queryFn: async () => {
       const res = await apiFetch("GET", `${BASE}/api/traffic/meta-audience-presets`);
+      if (!res.ok) throw new Error(await res.text());
       return res.json();
     },
   });
@@ -508,6 +510,7 @@ function InfluencerPanel({ campaignId }: { campaignId: number }) {
     queryKey: ["influencer-activations", campaignId],
     queryFn: async () => {
       const res = await apiFetch("GET", `${BASE}/api/traffic-campaigns/${campaignId}/influencer-activations`);
+      if (!res.ok) throw new Error(await res.text());
       return res.json();
     },
   });
@@ -778,6 +781,7 @@ function FunnelBuilder() {
     queryKey: ["growth-snapshots"],
     queryFn: async () => {
       const res = await apiFetch("GET", `${BASE}/api/growth-snapshots`);
+      if (!res.ok) throw new Error(await res.text());
       return res.json();
     },
   });
@@ -1110,6 +1114,7 @@ function HookLibrary() {
       if (niche !== "all") params.set("niche", niche);
       if (format !== "all") params.set("format", format);
       const res = await apiFetch("GET", `${BASE}/api/hook-library?${params}`);
+      if (!res.ok) throw new Error(await res.text());
       return res.json();
     },
   });
@@ -1286,6 +1291,7 @@ function SeoEngine() {
     queryKey: ["seo-content-jobs"],
     queryFn: async () => {
       const res = await apiFetch("GET", `${BASE}/api/seo-content-jobs`);
+      if (!res.ok) throw new Error(await res.text());
       return res.json();
     },
     refetchInterval: (data) => {
@@ -1417,6 +1423,7 @@ function ContentVelocity() {
     queryKey: ["content-velocity"],
     queryFn: async () => {
       const res = await apiFetch("GET", `${BASE}/api/traffic/content-velocity`);
+      if (!res.ok) throw new Error(await res.text());
       return res.json();
     },
     staleTime: 5 * 60 * 1000,
@@ -1451,7 +1458,7 @@ function ContentVelocity() {
       )}
 
       <div className="space-y-3">
-        {data?.recommendations.map(rec => (
+        {data?.recommendations?.map(rec => (
           <Card key={rec.platform} className="border-l-4 border-l-green-400">
             <CardContent className="pt-4">
               <div className="flex items-start justify-between gap-3 mb-3">
@@ -1502,6 +1509,7 @@ function GrowthDashboard() {
     queryKey: ["growth-snapshots"],
     queryFn: async () => {
       const res = await apiFetch("GET", `${BASE}/api/growth-snapshots`);
+      if (!res.ok) throw new Error(await res.text());
       return res.json();
     },
   });
@@ -1656,6 +1664,7 @@ export function TrafficPage() {
     queryKey: ["traffic-campaigns"],
     queryFn: async () => {
       const res = await apiFetch("GET", `${BASE}/api/traffic-campaigns`);
+      if (!res.ok) throw new Error(await res.text());
       return res.json();
     },
   });
