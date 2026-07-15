@@ -160,7 +160,7 @@ function CampaignDetail({ campaign, onStatusChange }: { campaign: TrafficCampaig
   const { data: detail, isLoading } = useQuery<TrafficCampaign>({
     queryKey: ["traffic-campaign-detail", campaign.id],
     queryFn: async () => {
-      const res = await fetch(`${BASE}/api/traffic-campaigns/${campaign.id}`, { credentials: "include" });
+      const res = await apiFetch("GET", `${BASE}/api/traffic-campaigns/${campaign.id}`);
       return res.json();
     },
   });
@@ -273,7 +273,7 @@ function MetaAdsPanel({ campaignId, channels }: { campaignId: number; channels: 
   const { data: presets = [] } = useQuery<Array<{ id: string; label: string; country: string; ageMin: number; ageMax: number }>>({
     queryKey: ["meta-audience-presets"],
     queryFn: async () => {
-      const res = await fetch(`${BASE}/api/traffic/meta-audience-presets`, { credentials: "include" });
+      const res = await apiFetch("GET", `${BASE}/api/traffic/meta-audience-presets`);
       return res.json();
     },
   });
@@ -507,7 +507,7 @@ function InfluencerPanel({ campaignId }: { campaignId: number }) {
   const { data: influencers = [], isLoading } = useQuery<InfluencerWithActivation[]>({
     queryKey: ["influencer-activations", campaignId],
     queryFn: async () => {
-      const res = await fetch(`${BASE}/api/traffic-campaigns/${campaignId}/influencer-activations`, { credentials: "include" });
+      const res = await apiFetch("GET", `${BASE}/api/traffic-campaigns/${campaignId}/influencer-activations`);
       return res.json();
     },
   });
@@ -777,7 +777,7 @@ function FunnelBuilder() {
   const { data: snapshots = [] } = useQuery<GrowthSnapshot[]>({
     queryKey: ["growth-snapshots"],
     queryFn: async () => {
-      const res = await fetch(`${BASE}/api/growth-snapshots`, { credentials: "include" });
+      const res = await apiFetch("GET", `${BASE}/api/growth-snapshots`);
       return res.json();
     },
   });
@@ -1109,7 +1109,7 @@ function HookLibrary() {
       if (platform !== "all") params.set("platform", platform);
       if (niche !== "all") params.set("niche", niche);
       if (format !== "all") params.set("format", format);
-      const res = await fetch(`${BASE}/api/hook-library?${params}`, { credentials: "include" });
+      const res = await apiFetch("GET", `${BASE}/api/hook-library?${params}`);
       return res.json();
     },
   });
@@ -1285,7 +1285,7 @@ function SeoEngine() {
   const { data: jobs = [], isLoading } = useQuery<SeoJob[]>({
     queryKey: ["seo-content-jobs"],
     queryFn: async () => {
-      const res = await fetch(`${BASE}/api/seo-content-jobs`, { credentials: "include" });
+      const res = await apiFetch("GET", `${BASE}/api/seo-content-jobs`);
       return res.json();
     },
     refetchInterval: (data) => {
@@ -1416,7 +1416,7 @@ function ContentVelocity() {
   }>({
     queryKey: ["content-velocity"],
     queryFn: async () => {
-      const res = await fetch(`${BASE}/api/traffic/content-velocity`, { credentials: "include" });
+      const res = await apiFetch("GET", `${BASE}/api/traffic/content-velocity`);
       return res.json();
     },
     staleTime: 5 * 60 * 1000,
@@ -1501,7 +1501,7 @@ function GrowthDashboard() {
   const { data: snapshots = [], isLoading } = useQuery<GrowthSnapshot[]>({
     queryKey: ["growth-snapshots"],
     queryFn: async () => {
-      const res = await fetch(`${BASE}/api/growth-snapshots`, { credentials: "include" });
+      const res = await apiFetch("GET", `${BASE}/api/growth-snapshots`);
       return res.json();
     },
   });
@@ -1655,7 +1655,7 @@ export function TrafficPage() {
   const { data: campaigns = [], isLoading } = useQuery<TrafficCampaign[]>({
     queryKey: ["traffic-campaigns"],
     queryFn: async () => {
-      const res = await fetch(`${BASE}/api/traffic-campaigns`, { credentials: "include" });
+      const res = await apiFetch("GET", `${BASE}/api/traffic-campaigns`);
       return res.json();
     },
   });
