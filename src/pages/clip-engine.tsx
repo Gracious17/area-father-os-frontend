@@ -28,7 +28,11 @@ async function apiFetch(path: string, opts?: RequestInit) {
   return res.json();
 }
 
-const PLATFORMS = ["instagram", "youtube", "tiktok", "x", "facebook", "snapchat"];
+// Only platforms with a working OAuth connect + publish flow on the backend
+// are selectable here — see PRODUCTION_READINESS_AUDIT.md. YouTube was
+// removed (no backend publish support); Snapchat was removed (not in the
+// backend's Platform schema at all — never worked).
+const PLATFORMS = ["instagram", "tiktok", "x", "facebook"];
 const TONES = ["african_english", "pidgin", "yoruba", "hausa"];
 const TONE_LABELS: Record<string, string> = { african_english: "African English", pidgin: "Pidgin", yoruba: "Yoruba", hausa: "Hausa" };
 const FORMATS = ["9:16", "1:1", "16:9"];

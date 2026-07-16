@@ -3,6 +3,20 @@ import { getToken } from "@clerk/react";
 
 const API_BASE = (import.meta.env.VITE_API_URL ?? "").replace(/\/+$/, "");
 
+/**
+ * Builds an absolute URL to a backend API path. Use this for ANY link/fetch
+ * that must hit the backend — OAuth start/callback URLs, public tracked
+ * links, embeddable widget src, etc. Never use import.meta.env.BASE_URL or
+ * window.location.origin for these: BASE_URL is this frontend app's own base
+ * path, not the backend's, and using it here silently 404s because the
+ * frontend's own domain has no matching route. This was the root cause of
+ * several production bugs (OAuth connect buttons, promo/QR links, the
+ * ambassador widget, partner-invite landing) — see PRODUCTION_READINESS_AUDIT.md.
+ */
+export function apiUrl(path: string): string {
+  return `${API_BASE}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const token = await getToken();
   const res = await fetch(`${API_BASE}${path}`, {

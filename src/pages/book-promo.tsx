@@ -186,7 +186,9 @@ function PromoLinksTab({ campaign }: { campaign: Campaign }) {
     onError: (e: Error) => toast({ title: e.message, variant: "destructive" }),
   });
 
-  const baseUrl = `${window.location.protocol}//${window.location.host}${import.meta.env.BASE_URL.replace(/\/$/, "")}/api/p/${campaign.slug}`;
+  // Must point at the backend — this is a public, shareable tracked
+  // redirect/QR link, not a frontend page.
+  const baseUrl = `${API}/p/${campaign.slug}`;
 
   function copyLink(channel: string) {
     navigator.clipboard.writeText(`${baseUrl}/${channel}`);

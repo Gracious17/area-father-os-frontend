@@ -68,7 +68,11 @@ interface ApprovalRequest {
   draft: PostDraft | null;
 }
 
-const ALL_PLATFORMS = ["instagram", "x", "tiktok", "facebook", "youtube", "threads"];
+// Only platforms with a working OAuth connect + publish flow on the backend
+// are selectable here — see PRODUCTION_READINESS_AUDIT.md. YouTube and
+// Threads were removed: selecting them let a post get scheduled successfully,
+// then silently fail at publish time with no OAuth/publish support behind them.
+const ALL_PLATFORMS = ["instagram", "x", "tiktok", "facebook"];
 
 // Aspect ratios each platform crops to (width/height expressed as CSS aspect-ratio)
 const PLATFORM_CROP_RATIOS: Record<string, string> = {

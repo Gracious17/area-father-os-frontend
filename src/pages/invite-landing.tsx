@@ -43,7 +43,9 @@ interface InviteData {
   token: string;
 }
 
-const apiBase = import.meta.env.BASE_URL.replace(/\/$/, "");
+// Must point at the backend, not this frontend's own origin — this page
+// fetches invite details from the backend API.
+const apiBase = (import.meta.env.VITE_API_URL ?? "").replace(/\/+$/, "");
 
 export function InviteLandingPage() {
   const { token } = useParams<{ token: string }>();

@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { getToken } from "@clerk/react";
+import DOMPurify from "dompurify";
 
 const apiBase = (import.meta.env.VITE_API_URL ?? "").replace(/\/+$/, "");
 
@@ -837,7 +838,7 @@ function EmailTemplateEditorTab() {
               <label className="text-gray-400 text-sm mb-1 block">Preview</label>
               <div
                 className="bg-white rounded p-4 text-sm text-gray-900 max-h-48 overflow-y-auto"
-                dangerouslySetInnerHTML={{ __html: editBody }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(editBody) }}
               />
             </div>
           )}

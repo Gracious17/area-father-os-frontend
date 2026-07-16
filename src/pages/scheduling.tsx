@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { getToken } from "@clerk/react";
 import { AppShell } from "@/components/AppShell";
 import { TierGuard } from "@/components/TierGuard";
 import { Button } from "@/components/ui/button";
@@ -37,6 +38,7 @@ import {
   useGenerateCaptions,
   useRecyclePost,
   useBulkUploadPosts,
+  apiUrl,
 } from "@/lib/api-client";
 import {
   Calendar,
@@ -46,7 +48,6 @@ import {
   Upload,
   RefreshCw,
   Instagram,
-  Youtube,
   Trash2,
   Clock,
   CheckCircle2,
@@ -85,13 +86,15 @@ type Platform = "instagram" | "tiktok" | "x" | "youtube" | "facebook" | "threads
 type CaptionTone = "pidgin" | "yoruba" | "igbo" | "hausa" | "formal";
 type PostStatus = "draft" | "scheduled" | "published" | "failed";
 
+// Only platforms with a working OAuth connect + publish flow on the backend
+// are selectable here — see PRODUCTION_READINESS_AUDIT.md. YouTube and
+// Threads were removed: selecting them let a post get scheduled successfully,
+// then silently fail at publish time with no OAuth/publish support behind them.
 const PLATFORMS: { key: Platform; label: string; color: string; icon: React.ReactNode }[] = [
   { key: "instagram", label: "Instagram", color: "bg-pink-500", icon: <Instagram className="w-3 h-3" /> },
   { key: "tiktok", label: "TikTok", color: "bg-black", icon: <span className="text-[10px] font-black">TT</span> },
   { key: "x", label: "X", color: "bg-gray-900", icon: <span className="text-[10px] font-black">𝕏</span> },
-  { key: "youtube", label: "YouTube", color: "bg-red-600", icon: <Youtube className="w-3 h-3" /> },
   { key: "facebook", label: "Facebook", color: "bg-blue-600", icon: <span className="text-[10px] font-black">f</span> },
-  { key: "threads", label: "Threads", color: "bg-gray-700", icon: <span className="text-[10px] font-black">@</span> },
 ];
 
 const TONES: { key: CaptionTone; label: string; flag: string }[] = [
@@ -463,8 +466,11 @@ function HistoryDialog({ post, open, onClose }: { post: any; open: boolean; onCl
     if (!post?.id) return;
     setLoading(true);
     try {
-      const baseUrl = import.meta.env.BASE_URL?.replace(/\/$/, "") || "";
-      const res = await fetch(`${baseUrl}/api/posts/${post.id}/history`, { credentials: "include" });
+      const token = await getToken();
+      const res = await fetch(apiUrl(`/api/posts/${post.id}/history`), {
+        credentials: "include",
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
       if (res.ok) setRevisions(await res.json());
     } catch {
       // silently ignore
@@ -1226,8 +1232,6 @@ function ReconnectRequiredBanner({ accounts }: { accounts: any[] }) {
     instagram: "📸", tiktok: "🎵", x: "🐦", facebook: "📘", youtube: "📺", threads: "🧵",
   };
 
-  const base = import.meta.env.BASE_URL?.replace(/\/$/, "") ?? "";
-
   // Split into accounts we can reconnect via OAuth vs those that need manual support
   const reconnectable = needsReconnect.filter((a) =>
     (OAUTH_SUPPORTED_PLATFORMS as readonly string[]).includes(a.platform)
@@ -1255,7 +1259,7 @@ function ReconnectRequiredBanner({ accounts }: { accounts: any[] }) {
           {reconnectable.map((a) => (
             <a
               key={a.id}
-              href={`${base}/api/oauth/${a.platform}/start`}
+              href={apiUrl(`/api/oauth/${a.platform}/start`)}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-600 hover:bg-red-700 text-white transition-colors"
             >
               <AlertTriangle className="w-3 h-3" />
@@ -1287,8 +1291,7 @@ const PLATFORM_OAUTH: { platform: string; label: string; color: string; textColo
 ];
 
 function connectOAuthUrl(platform: string): string {
-  const base = import.meta.env.BASE_URL?.replace(/\/$/, "") ?? "";
-  return `${base}/api/oauth/${platform}/start`;
+  return apiUrl(`/api/oauth/${platform}/start`);
 }
 
 function ConnectBanner({ accounts }: { accounts: any[] }) {

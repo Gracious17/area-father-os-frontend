@@ -205,6 +205,7 @@ function FanProfilesTab() {
                   <td className="px-4 py-3">
                     {!fan.purchaseVerified && (
                       <Button size="sm" variant="outline" className="h-7 text-xs"
+                        disabled={verifyMutation.isPending}
                         onClick={() => verifyMutation.mutate({ id: fan.id, purchaseVerified: true, fanTier: fan.fanTier < 2 ? 2 : fan.fanTier })}>
                         Verify Purchase
                       </Button>
@@ -386,7 +387,7 @@ function ChallengesTab() {
               {c.deadline && <span>Due {new Date(c.deadline).toLocaleDateString()}</span>}
             </div>
             <div className="mt-2 flex gap-2">
-              <Button size="sm" variant="destructive" className="h-6 text-xs px-2" onClick={() => deleteMutation.mutate(c.id)}>Delete</Button>
+              <Button size="sm" variant="destructive" className="h-6 text-xs px-2" disabled={deleteMutation.isPending} onClick={() => deleteMutation.mutate(c.id)}>Delete</Button>
             </div>
           </div>
         ))}
@@ -438,8 +439,8 @@ function ChallengesTab() {
                   {submissionsFilter === "pending" && (
                     <td className="px-4 py-2.5">
                       <div className="flex gap-1">
-                        <Button size="sm" className="h-6 text-xs px-2 bg-emerald-600 hover:bg-emerald-700" onClick={() => reviewMutation.mutate({ id: s.id, status: "approved" })}>Approve</Button>
-                        <Button size="sm" variant="destructive" className="h-6 text-xs px-2" onClick={() => reviewMutation.mutate({ id: s.id, status: "rejected" })}>Reject</Button>
+                        <Button size="sm" className="h-6 text-xs px-2 bg-emerald-600 hover:bg-emerald-700" disabled={reviewMutation.isPending} onClick={() => reviewMutation.mutate({ id: s.id, status: "approved" })}>Approve</Button>
+                        <Button size="sm" variant="destructive" className="h-6 text-xs px-2" disabled={reviewMutation.isPending} onClick={() => reviewMutation.mutate({ id: s.id, status: "rejected" })}>Reject</Button>
                       </div>
                     </td>
                   )}
@@ -565,6 +566,7 @@ function ContentVaultTab() {
                       </a>
                     )}
                     <Button size="sm" variant="ghost" className="h-6 text-xs px-2 text-destructive hover:text-destructive"
+                      disabled={deleteMutation.isPending}
                       onClick={() => deleteMutation.mutate(item.id)}>Delete</Button>
                   </div>
                 </div>
@@ -781,6 +783,7 @@ function OGMembersTab() {
                 <td className="px-4 py-3">
                   {og.status === "invited" && (
                     <Button size="sm" variant="outline" className="h-6 text-xs px-2"
+                      disabled={updateMutation.isPending}
                       onClick={() => updateMutation.mutate({ id: og.id, status: "accepted" })}>
                       Mark Accepted
                     </Button>

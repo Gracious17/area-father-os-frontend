@@ -158,7 +158,9 @@ function PlatformCredentialCard({
   const hasPartial = !!(status?.appId || status?.hasSecret);
   const canTest = (platform.key === "instagram" || platform.key === "facebook") && isConfigured;
 
-  const callbackUrl = `${window.location.origin}${import.meta.env.BASE_URL.replace(/\/$/, "")}/api/oauth/${platform.callbackPlatform}/callback`;
+  // Must point at the backend (API), not this frontend's own origin — this
+  // value is shown to the user to paste into their OAuth provider's console.
+  const callbackUrl = `${API}/oauth/${platform.callbackPlatform}/callback`;
 
   async function handleTest() {
     setTesting(true);
