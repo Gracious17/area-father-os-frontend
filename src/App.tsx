@@ -1,11 +1,12 @@
 import { useEffect, useRef, lazy, Suspense } from "react";
-import { ClerkProvider, SignIn, SignUp, Show, useClerk, useUser } from "@clerk/react";
+import { ClerkProvider, SignIn, SignUp, Show, useClerk, useUser, getToken } from "@clerk/react";
 import { shadcn } from "@clerk/themes";
 import { Switch, Route, useLocation, Router as WouterRouter, Redirect } from "wouter";
 import { QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { apiUrl } from "@/lib/api-client";
 
 // Lazy-loaded pages — each becomes its own JS chunk
 const Home                = lazy(() => import("@/pages/home"));
@@ -48,7 +49,16 @@ const isLocal =
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
-const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
+// Proxy mode is a Clerk feature for routing Clerk's frontend-API traffic
+// through this app's own domain instead of talking to Clerk directly — it
+// requires a server-side route on THIS domain to actually proxy the request,
+// which this frontend does not have. With a real custom Clerk domain already
+// configured (clerk.areafadaos.com), this should stay unset. `|| undefined`
+// guards against an empty-string env var still being treated as "set" by
+// ClerkProvider. If you ever see Clerk requests 404 at /__clerk/*, check
+// VITE_CLERK_PROXY_URL in Vercel's env vars — it's very likely still set
+// there from a previous configuration and should be removed.
+const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL || undefined;
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -170,20 +180,35 @@ function useConsumeInviteToken() {
   const { user } = useUser();
   useEffect(() => {
     if (!user) return;
-    const token = localStorage.getItem("partnerInviteToken");
-    if (!token) return;
-    const base = import.meta.env.BASE_URL.replace(/\/$/, "");
-    fetch(`${base}/api/partner-invites/complete-signup`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ token }),
-    })
-      .then(() => {
-        localStorage.removeItem("partnerInviteToken");
-        localStorage.removeItem("partnerInviteTier");
-      })
-      .catch(() => {});
+    const inviteToken = localStorage.getItem("partnerInviteToken");
+    if (!inviteToken) return;
+    (async () => {
+      try {
+        const authToken = await getToken();
+        const res = await fetch(apiUrl("/api/partner-invites/complete-signup"), {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+          },
+          credentials: "include",
+          body: JSON.stringify({ token: inviteToken }),
+        });
+        // Clear on success AND on a definitive rejection (bad/expired/already-used
+        // token) so this doesn't retry forever on every future sign-in — only
+        // leave it in place for transient failures (network/5xx) to retry later.
+        if (res.ok || (res.status >= 400 && res.status < 500)) {
+          localStorage.removeItem("partnerInviteToken");
+          localStorage.removeItem("partnerInviteTier");
+        }
+        if (!res.ok) {
+          console.error("Failed to complete partner invite signup:", await res.text().catch(() => res.statusText));
+        }
+      } catch (err) {
+        // Network error — leave the token in place to retry on next sign-in.
+        console.error("Failed to complete partner invite signup:", err);
+      }
+    })();
   }, [user?.id]);
 }
 

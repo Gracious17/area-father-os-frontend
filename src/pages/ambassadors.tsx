@@ -402,9 +402,10 @@ function LeaderboardTab({ ambassadors }: { ambassadors: Ambassador[] }) {
     }
   }
 
-  const basePath = import.meta.env.BASE_URL?.replace(/\/$/, "") ?? "";
+  // Must point at the backend — this is an embeddable widget meant to be
+  // pasted onto external creator websites, not a frontend page.
   const widgetCode = `<iframe
-  src="${window.location.origin}${basePath}/api/ambassadors/widget?token=${user?.id ?? ""}"
+  src="${API}/ambassadors/widget?token=${user?.id ?? ""}"
   width="100%"
   height="480"
   frameborder="0"

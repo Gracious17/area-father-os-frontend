@@ -644,7 +644,9 @@ function WhatsAppBlastPanel({ campaignId, channels }: { campaignId: number; chan
   const waChannel = channels.find(c => c.channel === "whatsapp");
 
   const trackedSlug = `wa-${campaignId}-${selectedList}`;
-  const trackedUrl = selectedList ? `${window.location.origin}${BASE}/t/${trackedSlug}` : "";
+  // BASE is already the backend's full absolute URL — do not prefix it with
+  // window.location.origin, that produced a malformed double-origin string.
+  const trackedUrl = selectedList ? `${BASE}/t/${trackedSlug}` : "";
 
   const { mutate: sendBlast, isPending } = useMutation({
     mutationFn: async () => {

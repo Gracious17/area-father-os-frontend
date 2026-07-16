@@ -17,7 +17,10 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from "recharts";
 
-const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
+// Must point at the backend, not this frontend's own origin — every fetch in
+// this file (brand deals, invoices, affiliate links, payments) previously
+// pointed at the frontend's own domain and 404'd. See PRODUCTION_READINESS_AUDIT.md.
+const BASE = (import.meta.env.VITE_API_URL ?? "").replace(/\/+$/, "");
 const API = `${BASE}/api`;
 
 type Currency = "NGN" | "GHS" | "KES" | "ZAR" | "USD";
@@ -375,7 +378,7 @@ function BrandDealsPanel({ currency }: { currency: Currency }) {
               <div><Label>Contact Email</Label><Input value={form.contactEmail} onChange={e => setForm(f => ({ ...f, contactEmail: e.target.value }))} type="email" /></div>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>Deal Value</Label><Input value={form.dealValue} onChange={e => setForm(f => ({ ...f, dealValue: e.target.value }))} type="number" placeholder="0" /></div>
+              <div><Label>Deal Value</Label><Input value={form.dealValue} onChange={e => setForm(f => ({ ...f, dealValue: e.target.value }))} type="number" min="0" placeholder="0" /></div>
               <div><Label>Currency</Label>
                 <Select value={form.currency} onValueChange={v => setForm(f => ({ ...f, currency: v as Currency }))}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
@@ -399,7 +402,11 @@ function BrandDealsPanel({ currency }: { currency: Currency }) {
           <DialogFooter className="gap-2">
             {editDeal && <Button variant="destructive" size="sm" onClick={() => { deleteMut.mutate(editDeal.id); setOpen(false); }}>Delete</Button>}
             <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button className="bg-emerald-500 hover:bg-emerald-600 text-white" onClick={() => saveMut.mutate()} disabled={saveMut.isPending || !form.brandName}>
+            <Button
+              className="bg-emerald-500 hover:bg-emerald-600 text-white"
+              onClick={() => saveMut.mutate()}
+              disabled={saveMut.isPending || !form.brandName || (form.dealValue !== "" && (isNaN(Number(form.dealValue)) || Number(form.dealValue) < 0))}
+            >
               {saveMut.isPending ? "Saving…" : "Save Deal"}
             </Button>
           </DialogFooter>
@@ -563,8 +570,8 @@ function InvoicesPanel() {
                 {form.lines.map((line, i) => (
                   <div key={i} className="grid grid-cols-12 gap-2 items-center">
                     <div className="col-span-6"><Input value={line.description} onChange={e => updateLine(i, "description", e.target.value)} placeholder="Description" /></div>
-                    <div className="col-span-2"><Input value={line.quantity} onChange={e => updateLine(i, "quantity", e.target.value)} type="number" placeholder="Qty" /></div>
-                    <div className="col-span-3"><Input value={line.unitPrice} onChange={e => updateLine(i, "unitPrice", e.target.value)} type="number" placeholder="Unit price" /></div>
+                    <div className="col-span-2"><Input value={line.quantity} onChange={e => updateLine(i, "quantity", e.target.value)} type="number" min="0" placeholder="Qty" /></div>
+                    <div className="col-span-3"><Input value={line.unitPrice} onChange={e => updateLine(i, "unitPrice", e.target.value)} type="number" min="0" placeholder="Unit price" /></div>
                     <div className="col-span-1 flex justify-center">
                       <Button type="button" size="sm" variant="ghost" onClick={() => removeLine(i)} className="text-red-400 h-7 w-7 p-0">✕</Button>
                     </div>
@@ -581,7 +588,15 @@ function InvoicesPanel() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button className="bg-emerald-500 hover:bg-emerald-600 text-white" onClick={() => createMut.mutate()} disabled={createMut.isPending || !form.clientName}>
+            <Button
+              className="bg-emerald-500 hover:bg-emerald-600 text-white"
+              onClick={() => createMut.mutate()}
+              disabled={
+                createMut.isPending ||
+                !form.clientName ||
+                form.lines.some(l => isNaN(Number(l.quantity)) || Number(l.quantity) < 0 || isNaN(Number(l.unitPrice)) || Number(l.unitPrice) < 0)
+              }
+            >
               {createMut.isPending ? "Creating…" : "Create Invoice"}
             </Button>
           </DialogFooter>
